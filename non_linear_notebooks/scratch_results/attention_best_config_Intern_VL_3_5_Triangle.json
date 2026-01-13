@@ -1,0 +1,18 @@
+{
+  "method": "attention",
+  "model": "Intern_VL_3_5",
+  "dataset": "Triangle",
+  "config": {
+    "embed_dim": 64,
+    "batch_size": 32,
+    "lr": 5.01507379229494e-05,
+    "num_layers": 2,
+    "token_level": 1,
+    "dropout": 0.3
+  },
+  "metrics": {
+    "accuracy": 0.9503968253968254,
+    "f1": 0.0,
+    "auroc": 0.9922128683438831
+  }
+}

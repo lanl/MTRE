@@ -1,0 +1,25 @@
+# Core ML/DL
+torch>=2.0.0
+transformers>=4.35.0
+accelerate>=0.24.0
+
+# Vision-Language Models
+# Install LLaVA: pip install llava or follow https://github.com/LLaVA-VL/LLaVA-NeXT
+# llava-onevision  # Uncomment when available on PyPI
+
+# Image processing
+opencv-python>=4.8.0
+Pillow>=10.0.0
+
+# Data processing
+numpy>=1.24.0
+pandas>=2.0.0
+pyarrow>=14.0.0  # For parquet files
+scipy>=1.11.0
+
+# ML utilities
+scikit-learn>=1.3.0
+tqdm>=4.66.0
+
+# Optional: Distributed evaluation
+# ray>=2.8.0

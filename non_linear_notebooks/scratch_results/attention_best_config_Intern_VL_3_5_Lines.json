@@ -1,0 +1,18 @@
+{
+  "method": "attention",
+  "model": "Intern_VL_3_5",
+  "dataset": "Lines",
+  "config": {
+    "embed_dim": 512,
+    "batch_size": 64,
+    "lr": 3.844720671541487e-06,
+    "num_layers": 3,
+    "token_level": 5,
+    "dropout": 0.3
+  },
+  "metrics": {
+    "accuracy": 0.9000000000000001,
+    "f1": 0.7993489269351338,
+    "auroc": 0.9452722984562607
+  }
+}
