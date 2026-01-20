@@ -13,7 +13,7 @@ def run_analysis(model_name, method_name, task):
     import logging
     from utils.func import read_jsonl
     from utils.parse import parse_multi_choice_response, parse_open_response, eval_multi_choice, eval_open
-    from non_linear_notebooks.cross_validation_tune import AttentionModelWrapper, AlphaModelWrapper
+    from non_linear_notebooks.cross_validation import AttentionModelWrapper, AlphaModelWrapper
     import csv
     import pickle
     import torch
@@ -431,7 +431,3 @@ if __name__ == "__main__":
         print("Usage: python MMMU_eval.py <model_name> <method> <task>")
     else:
         run_analysis(sys.argv[1],sys.argv[2],sys.argv[3])
-
-'''
-Geigh:  (0.8471573208722741, 0.8081588817439724, 0.8856873322898033) {'embed_dim': 1024, 'lr': 0.00010235526079237716, 'num_layers': 6, 'batch_size': 64, 'token_level': 10}
-'''

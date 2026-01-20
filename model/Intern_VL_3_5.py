@@ -375,7 +375,7 @@ class Intern_VL_3_5:
 
 
 # wrapper = InternVLWrapper(
-#     model_path="/lustre/scratch5/gzollicoffer/rebuttal/InternVL3_5-GPT-OSS-20B-A4B-Preview",
+#     model_path="./project/InternVL3_5-GPT-OSS-20B-A4B-Preview",
 #     torch_dtype=torch.bfloat16,
 #     device_map="auto",
 #     image_size=448,
@@ -383,7 +383,7 @@ class Intern_VL_3_5:
 # )
 
 # from PIL import Image
-# img = Image.open("/usr/projects/unsupgan/MM_TDA/MTRE_R/data/temp/llava_v1_5_radar.jpg").convert("RGB")
+# img = Image.open("./MTRE/data/temp/llava_v1_5_radar.jpg").convert("RGB")
 
 # # Text + scores
 # text, ids, logits, logprobs = wrapper.forward_with_probs(

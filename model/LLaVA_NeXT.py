@@ -219,10 +219,10 @@ class LlavaNeXT:
         return -logp_A#p_true
 
 
-# model_path = "/lustre/scratch5/gzollicoffer/rebuttal/llava-v1.6-34b-hf"
+# model_path = "./project/llava-v1.6-34b-hf"
 # wrapper = LlavaNextWrapper(model_path)
 
-# image_path = "/usr/projects/unsupgan/MM_TDA/MTRE_R/data/temp/llava_v1_5_radar.jpg"
+# image_path = "./MTRE/data/temp/llava_v1_5_radar.jpg"
 # image = Image.open(image_path)
 
 # conversation = [

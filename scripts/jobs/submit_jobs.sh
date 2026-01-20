@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TOPIC_ROOT="/lustre/scratch5/gzollicoffer/rebuttal/MMMU"
+TOPIC_ROOT="./project/MMMU"
 TOPIC_LIST="${TOPIC_ROOT}/_topic_list.txt"
 
 # Build (or refresh) topic list
@@ -18,4 +18,4 @@ MAX_PAR=20   # <-- tune to your cluster’s fairshare
 
 # Submit array 0..N-1 with concurrency cap
 echo "Submitting ${N} array tasks (0..$((N-1))) with max parallel ${MAX_PAR}"
-sbatch --array=0-$((N-1))%${MAX_PAR} /usr/projects/unsupgan/MM_TDA/MTRE_R/scripts/jobs/02_run_mmmu_topic.sbatch
+sbatch --array=0-$((N-1))%${MAX_PAR} /MTRE/scripts/jobs/02_run_mmmu_topic.sbatch

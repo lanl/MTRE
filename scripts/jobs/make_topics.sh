@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # --- Match your config ---
-TOPIC_ROOT="/lustre/scratch5/gzollicoffer/rebuttal/MMMU"
+TOPIC_ROOT="./project/MMMU"
 
 # Build a clean, stable list of topics (exclude cache/readme)
 find "${TOPIC_ROOT}" -mindepth 1 -maxdepth 1 -type d -printf "%f\n" \

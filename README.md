@@ -10,16 +10,18 @@
 
 ## 🌟 Key Features
 
-- **Multi-Token Analysis**: Analyzes the first 10 tokens instead of just the first token, capturing subtle inconsistencies that accumulate over time
+- **Multi-Token Analysis**: Analyzes the first n tokens instead of just the first token, capturing subtle inconsistencies that accumulate over time
 - **White-Box Detection**: Lightweight method using model logits without requiring fine-tuning or auxiliary networks
 - **State-of-the-Art Performance**: 9.4% gain in Accuracy and 14.8% gain in AUROC over standard detection methods
-- **Comprehensive Benchmarks**: Tested on MAD-Bench, MM-SafetyBench, MathVista, and four compositional-geometry tasks
+- **Comprehensive Benchmarks**: Tested on MAD-Bench, MM-SafetyBench, MathVista, MMMU, MME, and four compositional-geometry tasks
 - **Multiple VLM Support**: Compatible with LLaVA, MiniGPT-4, mPLUG-Owl, LLaMA-Adapter, and InternVL-3.5
+
+### Usage
+We evaluate the MTRE method on different tasks. For a specific task, you need to (i) prepare the datasets, (ii) prepare the vlm, (iii) run the model on the dataset to get logits of the first n tokens, and lastly, (iv) evaluate the performance of MTRE. The process may take some time, and may require minor adjustments to the models or packages downloaded.
 
 ## 📋 Table of Contents
 
 - [Installation](#-installation)
-- [Quick Start](#-quick-start)
 - [Pipeline Overview](#-pipeline-overview)
 - [Usage](#-usage)
   - [Data Preparation](#1-data-preparation)
@@ -41,7 +43,6 @@
 
 - Python 3.8 or higher
 - CUDA-capable GPU (recommended)
-- 16GB+ RAM
 - PyTorch 2.0+
 
 ### Setup
@@ -57,6 +58,7 @@ cd MTRE
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # or: venv\Scripts\activate  # Windows
+# or: conda activate mtre_env  # Conda
 ```
 
 3. Install dependencies:
@@ -64,47 +66,16 @@ source venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
-4. Install LLaVA (required for LLaVA-based models):
+4. Install and download models (required for all):
 ```bash
-# Option 1: From PyPI (when available)
-# pip install llava-onevision
-
-# Option 2: From source (recommended)
 git clone https://github.com/LLaVA-VL/LLaVA-NeXT.git
 cd LLaVA-NeXT && pip install -e . && cd ..
 ```
 
-## 🚀 Quick Start
-
-### Basic Example
-
-```python
-from model import build_model
-from dataset import build_dataset
-from utils.prompt import Prompter
-
-# Load model and dataset
-model = build_model(
-    model_name="LLaVA-7B",
-    model_path="./checkpoints/llava-v1.5-7b"
-)
-
-dataset = build_dataset("MADBench", split="validation")
-
-# Generate logits for first 10 tokens
-for sample in dataset:
-    logits = model.generate_with_logits(
-        image=sample["image"],
-        question=sample["question"],
-        num_tokens=10
-    )
-    # Save logits for later evaluation
-    save_logits(logits, sample["id"])
-```
 
 ### Command Line Usage
 
-Extract logits from a VLM on a specific task:
+Extract logits from a VLM on a specific task (Make sure to set model path):
 
 ```bash
 # Run LLaVA-7B on MM-SafetyBench
@@ -112,6 +83,9 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 bash ./scripts/Safety/run_LLaVA_7B.sh
 
 # Run on MAD-Bench
 CUDA_VISIBLE_DEVICES=0,1 bash ./scripts/MAD/run_LLaVA_7B.sh
+
+# Run on InternVL-3.5 on MMMU
+CUDA_VISIBLE_DEVICES=0,1 bash ./scripts/MMMU/run_all_InternVL_3_5.sh
 ```
 
 Evaluate MTRE on extracted logits:
@@ -124,6 +98,9 @@ python nonlinear_attention_safety_1.py
 
 # Evaluate on counting/math tasks
 python arith_all.py LLaVA-7B Squares MTRE
+
+# Evaluate on larger models (MMMU type 2)
+python MMMU_eval.py InternVL_3_5 MTRE MMMU_2
 ```
 
 ## 📊 Pipeline Overview
@@ -142,7 +119,7 @@ MTRE operates in two main stages:
 - Detect hallucinations based on reliability thresholds
 
 ```
-Image + Question → [VLM Generation] → First 10 Tokens
+Image + Question → [VLM Generation] → First k Tokens
                          ↓
                    Token Logits & Embeddings
                          ↓
@@ -189,18 +166,27 @@ MTRE/
 │   ├── prompt.py
 │   ├── parse.py
 │   └── unc_eval_extract.py
-├── non_linear_notebooks/  # MTRE model architectures and evaluation
-│   ├── model_archs/       # Core MTRE implementations
-│   │   ├── calib.py                           # MTRE-τ architecture
-│   │   └── attention_models_experimental.py   # MTRE architecture
-│   ├── configs/           # Hyperparameter configurations
-│   ├── nonlinear_attention_mad_1.py
-│   ├── nonlinear_attention_mad_2.py
-│   ├── nonlinear_attention_safety_1.py
-│   ├── nonlinear_attention_safety_2.py
-│   ├── arith_all_small.py
-│   ├── arith_all_large.py
-│   └── surprise_scratch.py
+├── non_linear_notebooks/                    # MTRE model architectures, training, and 
+|   ├── model_archs/                         # Core MTRE implementations
+|   │   ├── calib.py                         # MTRE-τ architecture
+|   │   └── attention_models_experimental.py # MTRE attention variants
+|   ├── configs/                             # Hyperparameter configurations
+|   ├── arith_all_small.py                   # Arithmetic eval (small)
+|   ├── arith_all_large.py                   # Arithmetic eval (large)
+|   ├── nonlinear_attention_mad_1.py         # MAD experiment (variant 1)
+|   ├── nonlinear_attention_mad_2.py         # MAD experiment (variant 2)
+|   ├── nonlinear_attention_safety_1.py      # Safety experiment (variant 1)
+|   ├── nonlinear_attention_safety_2.py      # Safety experiment (variant 2)
+|   ├── MMMU_eval.py                         # MMMU evaluation
+|   ├── MMMU_eval_ray.py                     # Distributed MMMU evaluation
+|   ├── MMMU_eval_tune.py                    # MMMU hyperparameter tuning
+|   ├── MMMU_tune_tau.py                     # τ tuning for MMMU
+|   ├── cross_validation.py                  # Cross-validation framework
+|   ├── cross_validation_tune.py             # Cross-validation tuning framework
+|   ├── run_eval_type_clean.py               # Unified evaluation runner
+|   ├── surprise_scratch.py                  # Scratch experiments
+|   └── scratch_results/                     # Experimental outputs
+
 ├── scripts/               # Shell scripts for running experiments
 │   ├── Safety/
 │   ├── MAD/
@@ -208,13 +194,18 @@ MTRE/
 │   ├── Lines/
 │   ├── Squares/
 │   ├── Triangle/
+|   ├── MMMU/
+|   ├── MME/
 │   └── OlympicLikeLogo/
 └── data/                  # Dataset annotations (download separately)
     ├── MADBench/
-    ├── pope/
+    ├── Pope/     #Safety uses Pope
+    ├── MathV/
     ├── Lines/
     ├── Squares/
     ├── Triangle/
+    ├── MMMU/
+    ├── MME/
     └── OlympicLikeLogo/
 ```
 
@@ -324,7 +315,8 @@ model = LlavaForConditionalGeneration.from_pretrained("liuhaotian/llava-v1.5-7b"
 - **MiniGPT-4**: [GitHub](https://github.com/Vision-CAIR/MiniGPT-4)
 - **mPLUG-Owl**: [GitHub](https://github.com/X-PLUG/mPLUG-Owl)
 - **LLaMA-Adapter**: [GitHub](https://github.com/OpenGVLab/LLaMA-Adapter)
-- **InternVL-3.5**: [HuggingFace](https://huggingface.co/OpenGVLab/InternVL-Chat-V1-5)
+- **InternVL-3.5**: [HuggingFace](https://huggingface.co/OpenGVLab/InternVL3_5-GPT-OSS-20B-A4B-Preview)
+- **LLaVA-NeXT**: [GitHub](https://github.com/LLaVA-VL/LLaVA-NeXT)
 
 **Configuration Steps:**
 
@@ -334,7 +326,7 @@ model = LlavaForConditionalGeneration.from_pretrained("liuhaotian/llava-v1.5-7b"
 
 ### 3. Extract Logits
 
-Run VLMs on datasets to extract first 10 tokens' logits.
+Run VLMs on datasets to extract first N tokens' logits.
 
 Scripts are organized by task in [scripts/](scripts/) directory.
 
@@ -359,6 +351,8 @@ CUDA_VISIBLE_DEVICES=0,1 bash ./scripts/MAD/run_LLaVA_7B.sh
 - `scripts/Squares/` - Squares counting task
 - `scripts/Triangle/` - Triangle counting task
 - `scripts/OlympicLikeLogo/` - Olympic logo counting task
+- `scripts/MMMU/` - MMMU task (Large VLMs only)
+- `scripts/MME/` - MME task (Large VLMs only)
 
 #### Script Parameters
 
@@ -378,7 +372,7 @@ Run MTRE evaluation on extracted logits.
 
 Evaluation code is in [non_linear_notebooks/](non_linear_notebooks/).
 
-#### Type 1 Datasets (MAD-Bench, MM-SafetyBench)
+#### Type 1 Datasets (MAD-Bench, MM-SafetyBench, MME, MMMU)
 
 ```bash
 cd non_linear_notebooks
@@ -388,6 +382,9 @@ python nonlinear_attention_mad_1.py
 
 # Evaluate on MM-SafetyBench
 python nonlinear_attention_safety_1.py
+
+# Evaluate on larger models (MMMU and MME)
+python MMMU_eval.py <Model> <Method> <Dataset>
 ```
 
 #### Type 2 Datasets
@@ -400,6 +397,9 @@ python nonlinear_attention_mad_2.py
 
 # Type 2 evaluation for MM-SafetyBench
 python nonlinear_attention_safety_2.py
+
+# Evaluate on larger models (MMMU_2 and MME_2)
+python MMMU_eval.py <Model> <Method> <Dataset>
 ```
 
 #### Counting and Math Tasks
@@ -468,6 +468,8 @@ DATASET_PATHS = {
     'MADBench': '/path/to/data/MADBench',
     'MMSafety': '/path/to/data/mm_safety',
     'MathV': '/path/to/MathVista/testmini',
+    'MMMU': '/path/to/MMMU',
+    'MME': '/path/to/MME',
     'POPE': '/path/to/data/pope',
     'Lines': '/path/to/data/Lines',
     'Squares': '/path/to/data/Squares',
@@ -480,7 +482,7 @@ DATASET_PATHS = {
 - **LLaVA Family**: 
   - LLaVA-v1.5-7B, LLaVA-v1.5-13B
   - LLaVA-NeXT (LLaVA-v1.6-34B, LLaVA-v1.6-vicuna-7B)
-- **InternVL**: InternVL-3.5
+- **InternVL**: InternVL-3.5 20B (GPT-OSS)
 - **MiniGPT-4**: MiniGPT-4-7B, MiniGPT-4-13B
 - **mPLUG-Owl**: mPLUG-Owl-7B
 - **LLaMA-Adapter**: LLaMA-Adapter-v2-7B
@@ -489,7 +491,6 @@ DATASET_PATHS = {
 
 ### Hallucination Detection
 - **MAD-Bench**: Deceptive questions across 6 categories (CountOfObject, NonexistentObject, ObjectAttribute, SceneUnderstanding, SpatialRelationship, Normal)
-- **POPE**: Polling-based Object Probing Evaluation on COCO images
 
 ### Safety & Jailbreak Defense
 - **MM-SafetyBench**: Multimodal safety benchmark with adversarial and safe image-query pairs
@@ -502,6 +503,10 @@ DATASET_PATHS = {
 - **Squares**: Count squares in grid patterns
 - **Triangle**: Count triangles in geometric configurations
 - **OlympicLikeLogo**: Count overlapping circles in Olympic-style arrangements
+
+### Domain Specific Tasks
+- **MMMU**: Large-scale, college-level tasks requiring domain knowledge and deliberate reasoning.
+- **MME**:  Perception and cognition abilities
 
 ## 📝 Citation
 
@@ -607,6 +612,7 @@ export PYTHONPATH=$PYTHONPATH:/path/to/LLaVA-NeXT
   - [MiniGPT-4](https://github.com/Vision-CAIR/MiniGPT-4)
   - [mPLUG-Owl](https://github.com/X-PLUG/mPLUG-Owl)
   - [LLaMA-Adapter](https://github.com/OpenGVLab/LLaMA-Adapter)
+  - [InternVL3.5(GPT-OSS)](https://github.com/OpenGVLab/InternVL)
 - Datasets:
   - [MAD-Bench](https://arxiv.org/abs/2402.13220)
   - [MM-SafetyBench](https://github.com/isXinLiu/MM-SafetyBench)

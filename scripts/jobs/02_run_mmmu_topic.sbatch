@@ -3,10 +3,10 @@
 #SBATCH --output=my_bash_job_MMMU_raw.out      # Standard output and error log
 #SBATCH --ntasks=1                    # Number of tasks (1 task for a single bash command)
 #SBATCH --partition gpu 
-#SBATCH -A w24_unsupgan_g 
+#SBATCH -A xxxxx
 #SBATCH --time=2:00:00 
 #SBATCH -C gpu80
-#SBATCH -o /lustre/scratch5/gzollicoffer/rebuttal/output_raw/LLaVA_NeXT/logs/slurm-%A_%a.out
+#SBATCH -o /output/LLaVA_NeXT/logs/slurm-%A_%a.out
 
 # Load any necessary modules (if needed)
 # module load some_module
@@ -26,11 +26,11 @@ cd /usr/projects/unsupgan/MM_TDA/MTRE_R
 set -euo pipefail
 
 # --- Configuration (same as your script; edit as needed) ---
-TOPIC_ROOT="/lustre/scratch5/gzollicoffer/rebuttal/MMMU"
+TOPIC_ROOT="./project/MMMU"
 MODEL_NAME="LLaVA_NeXT"
-MODEL_PATH="/lustre/scratch5/gzollicoffer/rebuttal/llava-v1.6-34b-hf"
+MODEL_PATH="./project/llava-v1.6-34b-hf"
 # MODEL_NAME="Intern_VL_3_5"
-# MODEL_PATH="/lustre/scratch5/gzollicoffer/rebuttal/InternVL3_5-GPT-OSS-20B-A4B-Preview"
+# MODEL_PATH="./project/InternVL3_5-GPT-OSS-20B-A4B-Preview"
 SPLIT="validation"
 PROMPT="oe"
 THEME="safety"
@@ -46,7 +46,7 @@ gpu_list="${CUDA_VISIBLE_DEVICES:-0}"
 IFS=',' read -ra GPULIST <<< "$gpu_list"
 CHUNKS=${#GPULIST[@]}
 
-OUT_DIR_BASE="/lustre/scratch5/gzollicoffer/rebuttal/output_raw/${MODEL_NAME}"
+OUT_DIR_BASE="./output/${MODEL_NAME}"
 TMP_DIR_BASE="${OUT_DIR_BASE}/tmp"
 LOG_DIR="${OUT_DIR_BASE}/logs"
 mkdir -p "$OUT_DIR_BASE" "$TMP_DIR_BASE" "$LOG_DIR"
